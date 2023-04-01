@@ -1,0 +1,54 @@
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.container {
+    padding: 20px;
+    display: flex;
+    border: 1px solid black;
+}
+
+#div-canvas {
+    aspect-ratio: 1/1;
+}
+
+canvas {
+    background-color: lightgrey;
+}
+
+#div-tools{
+    margin-left: 10px;
+}
+
+.horizontal {
+    display: flex;
+    flex-direction: row;
+}
+
+.vertical {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+}
+
+.buttons {
+    align-items: center;
+}
+
+h3{
+    margin: 0;
+    margin-top: 12px;
+}
+
+button{
+    margin: 5px 5px 5px 0;
+}
+
