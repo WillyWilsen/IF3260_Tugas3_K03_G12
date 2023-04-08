@@ -3,16 +3,17 @@ const camera_zoom = document.getElementById('camera_zoom');
 const camera_angle_x = document.getElementById('camera_angle_x');
 const camera_angle_y = document.getElementById('camera_angle_y');
 const camera_angle_z = document.getElementById('camera_angle_z');
+const tree = document.getElementById('tree');
 
 function app() {
     gl.enable(gl.DEPTH_TEST);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    for(let i = 0; i < objects.length; ++i) {
-       renderer.draw(gl, objects[i]);
+    if (rootModel){
+        rootModel.draw(renderer, gl);
     }
     setTimeout(app, 16)
- }
- setTimeout(app, 16)
+}
+setTimeout(app, 16)
 
 load_btn.addEventListener("click", e => {
     const uploadElement = document.createElement('input');
@@ -35,29 +36,17 @@ function fileUploaded(e) {
     const file = files[0];
     const reader = new FileReader();
     reader.onload = (e) => {
-        loadObjects(e.target.result, true, false);
+        loadModel(e.target.result);
     }
     reader.readAsText(file)
 }
  
-function loadObjects(object_string){
+function loadModel(object_string){
     const rawObject = JSON.parse(object_string);
-    if (Array.isArray(rawObject)) {
-        for (let i = 0; i < rawObject.length; i++) {
-            loadSingleObject(rawObject[i]);
-        }
-    } else {
-        loadSingleObject(rawObject);
-    }
-}
- 
-function loadSingleObject(rawObject) {
-    const model = new Model([], [], []);
-    
-    Object.assign(model, rawObject);
+    const newModel = new Model([], [], []);
+    Object.assign(newModel, rawObject);
+    rootModel = newModel;
     renderer.init(gl);
- 
-    objects.push(model);
 }
 
 function cameraZoomHandler(distance){

@@ -158,8 +158,6 @@ class Renderer{
 
     setViewMatrix(){
 
-        console.log(this.camera_properties);
-
         const translation = [
             1, 0, 0, 0,
             0, 1, 0, 0,
