@@ -1,9 +1,11 @@
 class Model {
-    constructor(vertices, colors, faces) {
+    constructor(name, vertices, colors, faces, level) {
 
+        this.name = name;
         this.vertices = vertices;
         this.colors = colors;
         this.faces = faces;
+        this.level = level;
 
         this.self_translation_matrix = [
             1, 0, 0, 0,
@@ -47,7 +49,7 @@ class Model {
             0, 0, 0, 1
         ];
 
-        this.childen = [];
+        this.children = [];
     }
 
     setVertices(vertices) {
@@ -75,9 +77,13 @@ class Model {
 
     draw(renderer, gl){
         renderer.draw(gl, this);
-        for (let i=0; i<this.childen.length; i++){
+        for (let i=0; i<this.children.length; i++){
             renderer.draw(gl, this.children[i]);
         }
+    }
+
+    setButton(button){
+        this.button = button;
     }
 
     

@@ -52,3 +52,12 @@ button{
     margin: 5px 5px 5px 0;
 }
 
+#div-tree{
+    height: 150px;
+    overflow: auto;
+    border: 1px solid black;
+}
+
+.block{
+    display: block;
+}

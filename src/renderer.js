@@ -65,6 +65,7 @@ class Renderer{
             "z_radian": 0,
         }
 
+        this.init(gl);
     }
 
     init(gl) {

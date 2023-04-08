@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Hollow Objects</title>
+    <title>Articulated Model</title>
     <link rel="stylesheet" href="index.css">
     <script src="renderer.js" defer></script>
     <script src="helper.js" defer></script>
@@ -16,9 +16,11 @@
     <h1>Tugas 2 IF3260 Grafika Komputer</h1>
     <div class="container">
         <div id="div-canvas">
-            <canvas id="canvas" width="600" height="600"></canvas>
+            <canvas id="canvas" width="450" height="450"></canvas>
         </div>
         <div id="div-tools">
+            <div id="div-tree">
+            </div>
             <div id="div-saveload" class="vertical">
                 <h3>Save & Load Model(s)</h3>
                 <div class="horizontal">
@@ -30,27 +32,32 @@
                     </button>
                 </div>
             </div> 
-        </div>
-        <div id="div-camera-move" class="vertical">
-            <h3>Camera Tools</h3>
-            <div class="horizontal">
-                Zoom in/out  
-                <input type="range" min="0" max="20" value="5" step="0.1" id="camera_zoom">
-            </div> 
-            <div class="horizontal">
-                Sumbu X
-                <input type="range" min="-180" max="180" value="0" step="0.01" id="camera_angle_x">
+            <div id="div-camera-move" class="vertical">
+                <h3>Camera Tools</h3>
+                <div class="horizontal">
+                    Zoom in/out  
+                    <input type="range" min="0" max="20" value="5" step="0.1" id="camera_zoom">
+                </div> 
+                <div class="horizontal">
+                    Sumbu X
+                    <input type="range" min="-180" max="180" value="0" step="0.01" id="camera_angle_x">
+                </div>
+                <div class="horizontal">
+                    Sumbu Y
+                    <input type="range" min="-180" max="180" value="0" step="0.01" id="camera_angle_y">
+                </div>
+                <div class="horizontal">
+                    Sumbu Z
+                    <input type="range" min="-180" max="180" value="0" step="0.01" id="camera_angle_z">
+                </div>
+                <h3></h3>
             </div>
-            <div class="horizontal">
-                Sumbu Y
-                <input type="range" min="-180" max="180" value="0" step="0.01" id="camera_angle_y">
+            <div id="div-add-component">
+                <button id="add-component-btn">
+                    Add component
+                </button>
             </div>
-            <div class="horizontal">
-                Sumbu Z
-                <input type="range" min="-180" max="180" value="0" step="0.01" id="camera_angle_z">
-            </div>
-            <h3></h3>
-        </div>
+        </div>   
     </div>
 </body>
 </html>
