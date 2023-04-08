@@ -5,3 +5,4 @@ let objects = []
 let default_objects_string = []
 let selectedIdx = 0
 let projectionMode = 'perspective'
+let renderer = new Renderer();
