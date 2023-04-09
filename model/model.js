@@ -76,10 +76,10 @@ class Model {
     }
 
     draw(renderer, gl){
-        renderer.draw(gl, this);
         for (let i=0; i<this.children.length; i++){
-            renderer.draw(gl, this.children[i]);
+            this.children[i].draw(renderer, gl);
         }
+        renderer.draw(gl, this);
     }
 
     setButton(button){

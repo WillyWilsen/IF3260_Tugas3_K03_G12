@@ -49,7 +49,7 @@ class Renderer{
         this.vertexShader = undefined
         this.fragmentShader = undefined
 
-        this.proj_matrix = getPerspectiveProjection(45, canvas.width/canvas.height, -1, 1);
+        this.proj_matrix = getOrthogonalProjection(-4, 4, -4, 4, 0.1, 15);
         this.model_matrix = [
             1, 0, 0, 0,
             0, 1, 0, 0,
