@@ -1,6 +1,6 @@
 class Model {
-    constructor(name, vertices, colors, faces, level) {
-
+    constructor(id, name, vertices, colors, faces, level) {
+        this.id = id;
         this.name = name;
         this.vertices = vertices;
         this.colors = colors;
