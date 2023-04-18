@@ -105,7 +105,6 @@ function loadModel(rawObject, level, createNewModel, parentIdx=undefined){
         }
         selectedParentIdx = eval(`${parentModel}.id`);
         const changeModel = `${parentModel}.children[${childIdx[childIdx.length - 1]}]`;
-        console.log(childIdx)
         removeTree(models[selectedIdx]);
         eval(`${changeModel} = newModel`);
     }
@@ -123,7 +122,6 @@ function loadModel(rawObject, level, createNewModel, parentIdx=undefined){
     }
 
     for(let i=0; i<children.length; i++){
-        console.log(models[0]);
         newModel.addChild(loadModel(children[i], level+1, true, newModel.id));
     }
 
