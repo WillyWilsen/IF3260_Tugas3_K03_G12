@@ -11,47 +11,11 @@ class Model {
         this.expandedVertices = [];
         this.expandedColors = [];
 
-        this.self_translation_matrix = [
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        ];
+        this.translation = { x: 0, y: 0, z: 0 }
+        this.rotation = { x: 0, y: 0, z: 0 }
+        this.scale = { x: 1, y: 1, z: 1 }
 
-        this.self_rotation_matrix = [
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        ];
-
-        this.self_scaling_matrix = [
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        ];
-
-        this.from_parent_translation_matrix = [
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        ];
-
-        this.from_parent_rotation_matrix = [
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        ];
-
-        this.from_parent_scaling_matrix = [
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        ];
+        this.model_matrix = identityMatrix()
 
         this.children = [];
     }
@@ -79,7 +43,7 @@ class Model {
 
     }
 
-    draw(renderer, gl){
+    draw(renderer, gl, cumulativeModelMatrix){
         
         // fill texCoord
         if (this.texCoords.length == 0){
@@ -91,10 +55,82 @@ class Model {
             this.generateNormal();
         }
 
+        // calculate cumulative model matrix
+        cumulativeModelMatrix = matrixMultiplication(cumulativeModelMatrix, this.model_matrix)
+
+        // render with the cumulative model matrix
+        renderer.draw(gl, this, cumulativeModelMatrix);
+
+        // recursively render children
         for (let i=0; i<this.children.length; i++){
-            this.children[i].draw(renderer, gl);
+            this.children[i].draw(renderer, gl, cumulativeModelMatrix);
         }
-        renderer.draw(gl, this);
+    }
+
+    setTranslation(x, y, z) {
+        this.translation = { x, y, z }
+        this.recalculateModelMatrix()
+    }
+
+    setRotation(x, y, z) {
+        this.rotation = { x, y, z }
+        this.recalculateModelMatrix()
+    }
+
+    setScale(x, y, z) {
+        this.scale = { x, y, z }
+        this.recalculateModelMatrix()
+    }
+
+    recalculateModelMatrix() {
+        const translation = this.translation;
+        const scale = this.scale;
+
+        const rotation = this.rotation;
+        const rotationRad = {
+            x: rotation.x * Math.PI / 180,
+            y: rotation.y * Math.PI / 180,
+            z: rotation.z * Math.PI / 180
+        }
+
+        const translation_matrix = [
+            1, 0, 0, translation.x,
+            0, 1, 0, translation.y,
+            0, 0, 1, translation.z,
+            0, 0, 0, 1
+        ];
+
+        const scaling_matrix = [
+            scale.x, 0, 0, 0,
+            0, scale.y, 0, 0,
+            0, 0, scale.z, 0,
+            0, 0, 0, 1
+        ];
+
+        const rotation_z_matrix = [
+            Math.cos(rotationRad.z), -Math.sin(rotationRad.z), 0, 0,
+            Math.sin(rotationRad.z), Math.cos(rotationRad.z), 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        ];
+
+        const rotation_y_matrix = [
+            Math.cos(rotationRad.y), 0, Math.sin(rotationRad.y), 0,
+            0, 1, 0, 0,
+            -Math.sin(rotationRad.y), 0, Math.cos(rotationRad.y), 0,
+            0, 0, 0, 1
+        ];
+
+        const rotation_x_matrix = [
+            1, 0, 0, 0,
+            0, Math.cos(rotationRad.x), -Math.sin(rotationRad.x), 0,
+            0, Math.sin(rotationRad.x), Math.cos(rotationRad.x), 0,
+            0, 0, 0, 1
+        ]
+
+        const rotation_matrix = matrixMultiplication(rotation_z_matrix, matrixMultiplication(rotation_y_matrix, rotation_x_matrix));
+
+        this.model_matrix = matrixMultiplication(translation_matrix, matrixMultiplication(rotation_matrix, scaling_matrix));
     }
 
     setButton(button){

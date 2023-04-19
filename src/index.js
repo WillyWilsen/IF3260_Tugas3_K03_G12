@@ -1,9 +1,23 @@
 const save_btn = document.getElementById('save-btn');
 const load_btn = document.getElementById('load-btn');
 const camera_zoom = document.getElementById('camera_zoom');
+
 const camera_angle_x = document.getElementById('camera_angle_x');
 const camera_angle_y = document.getElementById('camera_angle_y');
 const camera_angle_z = document.getElementById('camera_angle_z');
+
+const model_translation_x = document.getElementById('model_translation_x');
+const model_translation_y = document.getElementById('model_translation_y');
+const model_translation_z = document.getElementById('model_translation_z');
+
+const model_angle_x = document.getElementById('model_angle_x');
+const model_angle_y = document.getElementById('model_angle_y');
+const model_angle_z = document.getElementById('model_angle_z');
+
+const model_scale_x = document.getElementById('model_scale_x');
+const model_scale_y = document.getElementById('model_scale_y');
+const model_scale_z = document.getElementById('model_scale_z');
+
 const tree = document.getElementById('div-tree');
 const add_component_btn = document.getElementById('add-component-btn');
 const selected_component = document.getElementById('selected-component');
@@ -13,7 +27,7 @@ function app() {
     gl.enable(gl.DEPTH_TEST);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     if (models.length){
-        models[0].draw(renderer, gl);
+        models[0].draw(renderer, gl, identityMatrix());
     }
     setTimeout(app, 16);
 }
@@ -156,8 +170,28 @@ function removeTree(model) {
 }
 
 function changeSelected(idx){
+    state.selectedIdx = idx;
+    state.selectedModel = models[state.selectedIdx];
     selectedIdx = idx;
-    selected_component.innerHTML = models[selectedIdx].name;
+    
+    selected_component.innerHTML = state.selectedModel.name;
+    syncSliderValues();
+}
+
+function syncSliderValues() {
+    const model = state.selectedModel;
+
+    model_translation_x.value = model.translation.x;
+    model_translation_y.value = model.translation.y;
+    model_translation_z.value = model.translation.z;
+
+    model_angle_x.value = model.rotation.x;
+    model_angle_y.value = model.rotation.y;
+    model_angle_z.value = model.rotation.z;
+
+    model_scale_x.value = model.scale.x;
+    model_scale_y.value = model.scale.y;
+    model_scale_z.value = model.scale.z;
 }
 
 function cameraZoomHandler(distance){
@@ -179,6 +213,50 @@ camera_angle_y.addEventListener("input", (e) => {
 camera_angle_z.addEventListener("input", (e) => {
     cameraRotationHandler(e.target.value, "z");
 });
+
+// Model Transformations
+/// Translation
+model_translation_x.addEventListener("input", (e) => {
+    const model = state.selectedModel;
+    model.setTranslation(parseFloat(e.target.value), model.translation.y, model.translation.z);
+});
+model_translation_y.addEventListener("input", (e) => {
+    const model = state.selectedModel;
+    model.setTranslation(model.translation.x, parseFloat(e.target.value), model.translation.z);
+});
+model_translation_z.addEventListener("input", (e) => {
+    const model = state.selectedModel;
+    model.setTranslation(model.translation.x, model.translation.y, parseFloat(e.target.value));
+});
+
+/// Rotation
+model_angle_x.addEventListener("input", (e) => {
+    const model = state.selectedModel;
+    model.setRotation(parseFloat(e.target.value), model.rotation.y, model.rotation.z);
+});
+model_angle_y.addEventListener("input", (e) => {
+    const model = state.selectedModel;
+    model.setRotation(model.rotation.x, parseFloat(e.target.value), model.rotation.z);
+});
+model_angle_z.addEventListener("input", (e) => {
+    const model = state.selectedModel;
+    model.setRotation(model.rotation.x, model.rotation.y, parseFloat(e.target.value));
+});
+
+/// Scale
+model_scale_x.addEventListener("input", (e) => {
+    const model = state.selectedModel;
+    model.setScale(parseFloat(e.target.value), model.scale.y, model.scale.z);
+});
+model_scale_y.addEventListener("input", (e) => {
+    const model = state.selectedModel;
+    model.setScale(model.scale.x, parseFloat(e.target.value), model.scale.z);
+});
+model_scale_z.addEventListener("input", (e) => {
+    const model = state.selectedModel;
+    model.setScale(model.scale.y, model.scale.y, parseFloat(e.target.value));
+});
+
 
 function addComponent(parentIdx){
     const name = "Cube " + models.length.toString();

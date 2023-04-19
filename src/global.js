@@ -6,3 +6,10 @@ let selectedIdx = undefined;
 let childIdx = [];
 let projectionMode = 'perspective';
 let renderer = new Renderer();
+
+const state = {
+    models: models,
+    topLevelModels: [],
+    selectedIdx: undefined,
+    /**@type {Model} */ selectedModel: undefined
+}

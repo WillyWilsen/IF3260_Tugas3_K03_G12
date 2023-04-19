@@ -87,12 +87,7 @@ class Renderer{
         this.fragmentShader = undefined
 
         this.proj_matrix = getOrthogonalProjection(-4, 4, -4, 4, 0.1, 15);
-        this.model_matrix = [
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        ];
+        
         this.view_matrix = undefined;
 
         this.transform_normal_matrix = undefined;
@@ -144,10 +139,10 @@ class Renderer{
         this._WorldCameraPositionLocation = gl.getUniformLocation(this.program, "uWorldCameraPosition");
     }
 
-    draw(gl, model) {
+    draw(gl, model, cumulativeModelMatrix) {
 
         this.setViewMatrix();
-        this.setTransformNormalMatrix();
+        this.setTransformNormalMatrix(cumulativeModelMatrix);
         this.setCameraPosition();
 
         const vertexBuffer = gl.createBuffer();
@@ -186,7 +181,7 @@ class Renderer{
 
         gl.uniformMatrix4fv(this._Pmatrix, false, this.proj_matrix);
         gl.uniformMatrix4fv(this._Vmatrix, false, this.view_matrix);
-        gl.uniformMatrix4fv(this._Mmatrix, false, this.model_matrix);
+        gl.uniformMatrix4fv(this._Mmatrix, false, cumulativeModelMatrix);
         gl.uniformMatrix4fv(this._TransformNormalMatrix, false, this.transform_normal_matrix);
 
         gl.uniform3fv(this._WorldCameraPositionLocation, this.cameraPosition);
@@ -256,8 +251,8 @@ class Renderer{
 
     }
 
-    setTransformNormalMatrix(){
-        const modelViewMatrix = matrixMultiplication(this.model_matrix, this.view_matrix);
+    setTransformNormalMatrix(cumulativeModelMatrix){
+        const modelViewMatrix = matrixMultiplication(cumulativeModelMatrix, this.view_matrix);
         this.transform_normal_matrix = transposeMatrix(invertMatrix4(modelViewMatrix));
     }
 
