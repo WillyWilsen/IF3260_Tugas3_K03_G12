@@ -8,6 +8,7 @@ class Renderer{
         uniform mat4 Mmatrix;
         attribute vec3 color;
         varying vec3 vColor;
+        attribute vec2 texCoord;
 
         attribute vec3 normal;
         uniform mat4 TransformNormalMatrix;
@@ -15,9 +16,12 @@ class Renderer{
 
         uniform bool shadingOn;
 
+        varying vec2 vTexCoord;
+
         void main(void) { 
             gl_Position = vec4(position, 1)*Mmatrix*Vmatrix*Pmatrix;
             vColor = color;
+            vTexCoord = texCoord;
 
             if (shadingOn){
                 vec3 ambientLight = vec3(0.3, 0.3, 0.3);
@@ -40,8 +44,17 @@ class Renderer{
 
         varying vec3 vLighting;
 
+        varying vec2 vTexCoord;
+        uniform sampler2D uSampler;
+
+        uniform int mappingType;
+
         void main() {
-            gl_FragColor = vec4(vColor.rgb * vLighting, 1.0);
+            if (mappingType == 0){ // no mapping
+                gl_FragColor = vec4(vColor.rgb * vLighting, 1.0);
+            } else if (mappingType == 1){ // texture mapping
+                gl_FragColor = texture2D(uSampler, vTexCoord);
+            }
         }
         `
 
@@ -66,6 +79,9 @@ class Renderer{
         }
 
         this.init(gl);
+
+        this.image = new Image();
+        this.image.src = "../asset/texture.jpg";
     }
 
     init(gl) {
@@ -94,6 +110,8 @@ class Renderer{
         this._Mmatrix = gl.getUniformLocation(this.program, "Mmatrix");
         this._TransformNormalMatrix = gl.getUniformLocation(this.program, "TransformNormalMatrix");
         this._ShadingOn = gl.getUniformLocation(this.program, "shadingOn");
+        this._Sampler = gl.getUniformLocation(this.program, "uSampler");
+        this._Mapping = gl.getUniformLocation(this.program, "mappingType");
     }
 
     draw(gl, model) {
@@ -102,7 +120,7 @@ class Renderer{
 
         const vertexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.vertices), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.expandedVertices), gl.STATIC_DRAW);
 
         const vertexPosition = gl.getAttribLocation(this.program, 'position');
         gl.enableVertexAttribArray(vertexPosition);
@@ -110,15 +128,11 @@ class Renderer{
 
         const fragmentBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, fragmentBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.colors), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.expandedColors), gl.STATIC_DRAW);
 
         const colorPosition = gl.getAttribLocation(this.program, 'color');
         gl.enableVertexAttribArray(colorPosition);
         gl.vertexAttribPointer(colorPosition, 3, gl.FLOAT, false, 0, 0);
-
-        const index_buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.faces), gl.STATIC_DRAW);
 
         // const normal_buffer = gl.createBuffer();
         // gl.bindBuffer(gl.ARRAY_BUFFER, normal_buffer);
@@ -128,6 +142,29 @@ class Renderer{
         // gl.enableVertexAttribArray(normalLocation);
         // gl.vertexAttribPointer(normalLocation, 3, gl.FLOAT, false, 0, 0);
 
+        const texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255]));
+
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
+        if (this.isPowerOf2(this.image.width) && this.isPowerOf2(this.image.height)) {
+            gl.generateMipmap(gl.TEXTURE_2D);
+        } else {
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        }
+
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+        const textureCoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.texCoords), gl.STATIC_DRAW);
+
+        const textureCoord = gl.getAttribLocation(this.program, "texCoord");
+        gl.enableVertexAttribArray(textureCoord);
+        gl.vertexAttribPointer(textureCoord, 2, gl.FLOAT, false, 0, 0);
+
         gl.useProgram(this.program)
 
         gl.uniformMatrix4fv(this._Pmatrix, false, this.proj_matrix);
@@ -136,8 +173,13 @@ class Renderer{
         // gl.uniformMatrix4fv(this._TransformNormalMatrix, false, this.transform_normal_matrix);
 
         // gl.uniform1i(this._ShadingOn, this.shadingOn);
+        gl.uniform1i(this._Mapping, 1); // change mapping type
 
-        gl.drawElements(gl.TRIANGLES, model.faces.length, gl.UNSIGNED_SHORT, 0);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.uniform1i(this._Sampler, 0);
+
+        gl.drawArrays(gl.TRIANGLES, 0, model.expandedVertices.length);
     }
 
     moveCameraTo(distance){
@@ -191,6 +233,20 @@ class Renderer{
         this.view_matrix = matrixMultiplication(this.view_matrix, rotation_y);
         this.view_matrix = matrixMultiplication(this.view_matrix, rotation_z);
 
+    }
+
+    prepareImage(){
+        const texture = gl.createTexture();
+        
+        this.image.onload = () => {
+            
+        };
+        
+        
+    }
+
+    isPowerOf2(value) {
+        return (value & (value - 1)) === 0;
     }
 
 }
