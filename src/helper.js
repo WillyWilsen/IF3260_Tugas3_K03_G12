@@ -129,3 +129,15 @@ function identityMatrix() {
         0, 0, 0, 1
     ];
 }
+
+function subtractVector3(v1, v0){
+    return [v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]];
+}
+
+function subtractVector2(v1, v0){
+    return [v1[0] - v0[0], v1[1] - v0[1]];
+}
+
+function scaleVector3(v, s){
+    return [v[0] * s, v[1] * s, v[2] * s];
+}

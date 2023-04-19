@@ -10,6 +10,8 @@ class Model {
         this.normals = [];
         this.expandedVertices = [];
         this.expandedColors = [];
+        this.tangents = [];
+        this.bitangents = [];
 
         this.translation = { x: 0, y: 0, z: 0 }
         this.rotation = { x: 0, y: 0, z: 0 }
@@ -53,6 +55,11 @@ class Model {
         // fill Normal
         if (this.normals.length == 0){
             this.generateNormal();
+        }
+
+        // fill tangents and bitangents
+        if (this.tangents.length == 0){
+            this.generateTangent();
         }
 
         // calculate cumulative model matrix
@@ -218,6 +225,34 @@ class Model {
             this.normals.push(n.x, n.y, n.z);
             this.normals.push(n.x, n.y, n.z);
 
+        }
+    }
+
+    generateTangent() {
+        for (let i = 0; i < this.expandedVertices.length/9; i += 1) {
+            const v0 = [this.expandedVertices[i*9], this.expandedVertices[i*9 + 1], this.expandedVertices[i*9 + 2]];
+            const v1 = [this.expandedVertices[i*9 + 3], this.expandedVertices[i*9 + 4], this.expandedVertices[i*9 + 5]];
+            const v2 = [this.expandedVertices[i*9 + 6], this.expandedVertices[i*9 + 7], this.expandedVertices[i*9 + 8]];
+    
+            const uv0 = [this.texCoords[i*6], this.texCoords[i*6 + 1]];
+            const uv1 = [this.texCoords[i*6 + 2], this.texCoords[i*6 + 3]];
+            const uv2 = [this.texCoords[i*6 + 4], this.texCoords[i*6 + 5]];
+    
+            const deltaPos1 = subtractVector3(v1, v0);
+            const deltaPos2 = subtractVector3(v2, v0);
+    
+            const deltaUV1 = subtractVector2(uv1, uv0);
+            const deltaUV2 = subtractVector2(uv2, uv0);
+    
+            const f = 1.0 / (deltaUV1[0] * deltaUV2[1] - deltaUV1[1] * deltaUV2[0]);
+    
+            const tangent = scaleVector3(subtractVector3(scaleVector3(deltaPos1, deltaUV2[1]), scaleVector3(deltaPos2, deltaUV1[1])), f);
+            const bitangent = scaleVector3(subtractVector3(scaleVector3(deltaPos2, deltaUV1[0]), scaleVector3(deltaPos1, deltaUV2[0])), f);
+
+            for (var j = 0; j < 3; j++) {
+                this.tangents.push(tangent[0], tangent[1], tangent[2]);
+                this.bitangents.push(bitangent[0], bitangent[1], bitangent[2]);
+            }
         }
     }
 
