@@ -1,6 +1,12 @@
 const save_btn = document.getElementById('save-btn');
 const load_btn = document.getElementById('load-btn');
 const play_animation = document.getElementById('play-animation');
+const pause_animation = document.getElementById('pause-animation');
+const reverse_animation = document.getElementById('reverse-animation');
+const reply_animation = document.getElementById('reply-animation');
+const loopable_animation = document.getElementById('loopable-animation');
+
+const fps = document.getElementById('fps');
 
 const dropdown_projection = document.getElementById('dropdown_projection');
 const camera_zoom = document.getElementById('camera_zoom');
@@ -311,26 +317,111 @@ mapping_dropdown.addEventListener('change', (e) => {
 
 // Animation
 play_animation.addEventListener('click', (e) => {
-    time_per_frame = 1000 / 10;
-    current_frame = 0;
+    time_per_frame = 1000 / fps.value;
     total_frame = models[0].total_frame;
+    if (current_frame >= total_frame && !isAnimationReversed) {
+        current_frame = 0;
+    }
+    if (current_frame < 0 && isAnimationReversed) {
+        current_frame = total_frame - 1;
+    }
+    isAnimationPaused = false;
     animate()
+    // while (isAnimationLoopable) {
+    //     time_per_frame = 1000 / fps.value;
+    //     total_frame = models[0].total_frame;
+    //     if (current_frame >= total_frame && !isAnimationReversed) {
+    //         current_frame = 0;
+    //     }
+    //     if (current_frame < 0 && isAnimationReversed) {
+    //         current_frame = total_frame - 1;
+    //     }
+    //     isAnimationPaused = false;
+    //     animate()
+    // }
+});
+
+pause_animation.addEventListener('click', (e) => {
+    total_frame = models[0].total_frame;
+    isAnimationPaused = true;
+});
+
+reverse_animation.addEventListener('change', (e) => {
+    total_frame = models[0].total_frame;
+    if (reverse_animation.checked) {
+        isAnimationReversed = true;
+        if (current_frame >= total_frame) {
+            current_frame = total_frame - 1;
+        }
+    } else {
+        isAnimationReversed = false;
+        if (current_frame < 0) {
+            current_frame = 0;
+        }
+    }
+});
+
+reply_animation.addEventListener('click', (e) => {
+    time_per_frame = 1000 / fps.value;
+    total_frame = models[0].total_frame;
+    if (!isAnimationReversed) {
+        current_frame = 0;
+    } else {
+        current_frame = total_frame - 1;
+    }
+    isAnimationPaused = false;
+    animate()
+    // while (isAnimationLoopable) {
+    //     time_per_frame = 1000 / fps.value;
+    //     total_frame = models[0].total_frame;
+    //     if (!isAnimationReversed) {
+    //         current_frame = 0;
+    //     } else {
+    //         current_frame = total_frame - 1;
+    //     }
+    //     isAnimationPaused = false;
+    //     animate()
+    // }
+});
+
+loopable_animation.addEventListener('change', (e) => {
+    if (loopable_animation.checked) {
+        isAnimationLoopable = true;
+    } else {
+        isAnimationLoopable = false;
+    }
 });
 
 const animate = () => {
-    if (current_frame === 0) {
+    if (current_frame === 0 && !isAnimationReversed) {
         time = Date.now();
         animationModel(models[0], current_frame);
         current_frame++;
     }
+    if (current_frame === total_frame - 1 && isAnimationReversed) {
+        time = Date.now();
+        animationModel(models[0], current_frame);
+        current_frame--;
+    }
 
-    if (current_frame < total_frame) {
-        if (Date.now() - time >= time_per_frame) {
-            time = Date.now();
-            animationModel(models[0], current_frame);
-            current_frame++;
+    if (current_frame < total_frame && !isAnimationReversed) {
+        if (!isAnimationPaused) {
+            if (Date.now() - time >= time_per_frame) {
+                time = Date.now();
+                animationModel(models[0], current_frame);
+                current_frame++;
+            }
+            requestAnimationFrame(animate);
         }
-        requestAnimationFrame(animate);
+    } else if (current_frame >= 0 && isAnimationReversed) {
+        if (!isAnimationPaused) {
+            if (Date.now() - time >= time_per_frame) {
+                time = Date.now();
+                animationModel(models[0], current_frame);
+                current_frame--;
+            }
+            requestAnimationFrame(animate);
+        }
     } else {
         if (Date.now() - time >= time_per_frame) {
             resetAnimationModel(models[0]);

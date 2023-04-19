@@ -44,6 +44,24 @@
                 <h3>Animation</h3>
                 <div class="horizontal">
                     <button id="play-animation">Play</button>
+                    <button id="pause-animation">Pause</button>
+                    <button id="reply-animation">Reply</button>
+                </div>
+                <div class="horizontal">
+                    <input type="checkbox" id="reverse-animation">
+                    <label for="reverse-animation">Reverse</label>
+                </div>
+                <div class="horizontal">
+                    <input type="checkbox" id="loopable-animation">
+                    <label for="loopable-animation">Loopable</label>
+                </div>
+            </div>
+
+            <div id="div-frame" class="vertical">
+                <h3>Frame</h3>
+                <div class="horizontal">
+                    Frame Per Second
+                    <input type="range" min="0.01" max="60" value="30" step="0.01" id="fps">
                 </div>
             </div>
 

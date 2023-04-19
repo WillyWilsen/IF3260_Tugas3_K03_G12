@@ -8,8 +8,11 @@ let projectionMode = 'perspective';
 let renderer = new Renderer();
 let time = undefined;
 let time_per_frame = undefined;
-let current_frame = undefined;
+let current_frame = 0;
 let total_frame = undefined;
+let isAnimationPaused = undefined;
+let isAnimationReversed = false;
+let isAnimationLoopable = false;
 
 const state = {
     models: models,
