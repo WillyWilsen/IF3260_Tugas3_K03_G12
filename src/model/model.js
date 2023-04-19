@@ -86,5 +86,9 @@ class Model {
         this.button = button;
     }
 
+    generateTexCoord(){
+        console.log(this.faces.length);
+    }
+
     
 }
