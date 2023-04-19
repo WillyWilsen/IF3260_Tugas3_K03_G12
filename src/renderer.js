@@ -104,7 +104,7 @@ class Renderer{
                 vec4 texelColor = textureCube(uSamplerCube, direction);
                 gl_FragColor = vec4(texelColor.rgb * vLighting, texelColor.a);
             } else if (mappingType == 3){ // bump mapping
-                vec3 lightDir = normalize(v_btn * normalize(vec3(1, 1, 1)) - v_btn * v_viewModelPosition);
+                vec3 lightDir = normalize(v_btn * normalize(vec3(0, 0, 1)) - v_btn * v_viewModelPosition);
                 vec3 albedo = texture2D(uSamplerBump, vTexCoord).rgb;
                 vec3 ambient = 0.3 * albedo;
                 float diffuse = max(dot(lightDir, normalize(albedo * 2.0 - 1.0)), 0.0);
