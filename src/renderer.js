@@ -86,11 +86,11 @@ class Renderer{
         this.vertexShader = undefined
         this.fragmentShader = undefined
 
-        this.proj_matrix = getOrthogonalProjection(-4, 4, -4, 4, 0.1, 15);
+        this.setProjection('perspective')
         
         this.view_matrix = undefined;
 
-        this.transform_normal_matrix = undefined;
+        this.transform_normal_matrix = undefined
 
         this.camera_properties = {
             "distance": 5,
@@ -99,12 +99,11 @@ class Renderer{
             "z_radian": 0,
         }
 
-        this.cameraPosition = [0,0,0];
+        this.cameraPosition = [0,0,0]
 
-        this.init(gl);
+        this.init(gl)
 
-        this.mappingType = 0;
-            
+        this.mappingType = 0
     }
 
     init(gl) {
@@ -347,4 +346,16 @@ class Renderer{
         this.mappingType = type;
     }
 
+    setProjection(type) {
+        if (type == 'orthographic') {
+            this.proj_matrix = getOrthogonalProjection(-4, 4, -4, 4, 0.1, 15);
+            console.log('Orthographic!');
+        } else if (type == 'oblique') {
+            this.proj_matrix = getObliqueProjection(45, 45, -6, 2, -6, 2, -2, 10);
+            console.log('Oblique!');
+        } else {
+            this.proj_matrix = getPerspectiveProjection(45, canvas.width/canvas.height, 0.1, 15);
+            console.log('Perspective!');
+        }
+    }
 }

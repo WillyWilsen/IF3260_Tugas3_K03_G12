@@ -1,7 +1,8 @@
 const save_btn = document.getElementById('save-btn');
 const load_btn = document.getElementById('load-btn');
-const camera_zoom = document.getElementById('camera_zoom');
 
+const dropdown_projection = document.getElementById('dropdown_projection');
+const camera_zoom = document.getElementById('camera_zoom');
 const camera_angle_x = document.getElementById('camera_angle_x');
 const camera_angle_y = document.getElementById('camera_angle_y');
 const camera_angle_z = document.getElementById('camera_angle_z');
@@ -194,6 +195,11 @@ function syncSliderValues() {
     model_scale_y.value = model.scale.y;
     model_scale_z.value = model.scale.z;
 }
+
+// Camera viewing control
+dropdown_projection.addEventListener("change", (e) => {
+    renderer.setProjection(e.target.value);
+});
 
 function cameraZoomHandler(distance){
     renderer.moveCameraTo(distance);

@@ -38,8 +38,17 @@
                     </button>
                 </div>
             </div> 
+
             <div id="div-camera-move" class="vertical">
                 <h3>Camera Tools</h3>
+                <div id="div-select-projection" class="horizontal">
+                    <label for="dropdown_projection">Projection:</label>&nbsp;
+                    <select id="dropdown_projection">
+                        <option value="orthographic">Orthographic</option>
+                        <option value="perspective" selected>Perspective</option>
+                        <option value="oblique">Oblique</option>
+                    </select>
+                </div>
                 <div class="horizontal">
                     Zoom in/out  
                     <input type="range" min="0" max="20" value="5" step="0.1" id="camera_zoom">
