@@ -311,6 +311,7 @@ mapping_dropdown.addEventListener('change', (e) => {
         renderer.prepareEnvironment();
         renderer.setMappingType(2);
     } else if (e.target.value == "bump"){
+        renderer.prepareBump();
         renderer.setMappingType(3);
     }
 });

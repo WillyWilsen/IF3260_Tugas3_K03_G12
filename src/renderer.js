@@ -3,23 +3,35 @@ class Renderer{
 
         this.vertexShaderCode = 
         `attribute vec3 position;
+        attribute vec3 color;
+        attribute vec3 normal;
+        attribute vec3 a_tangent;
+        attribute vec3 a_bitangent;
+        attribute vec2 texCoord;
+
         uniform mat4 Pmatrix;
         uniform mat4 Vmatrix;
         uniform mat4 Mmatrix;
-        attribute vec3 color;
-        varying vec3 vColor;
-        attribute vec2 texCoord;
-
-        attribute vec3 normal;
         uniform mat4 TransformNormalMatrix;
-        varying vec3 vLighting;
-
         uniform bool shadingOn;
 
+        varying vec3 vColor;
+        varying vec3 vLighting;
         varying vec2 vTexCoord;
-
         varying vec3 v_worldPosition;
         varying vec3 v_worldNormal;
+        varying vec3 v_viewModelPosition;
+        varying mat3 v_btn;
+        
+        mat3 transpose(in mat3 inMatrix) {
+            vec3 i0 = inMatrix[0];
+            vec3 i1 = inMatrix[1];
+            vec3 i2 = inMatrix[2];
+          
+            mat3 outMatrix = mat3(vec3(i0.x, i1.x, i2.x), vec3(i0.y, i1.y, i2.y), vec3(i0.z, i1.z, i2.z));
+          
+            return outMatrix;
+        }
 
         void main(void) { 
             gl_Position = vec4(position, 1)*Mmatrix*Vmatrix*Pmatrix;
@@ -31,6 +43,14 @@ class Renderer{
             // for environment mapping
             v_worldPosition = (Mmatrix * vec4(position, 1)).xyz;
             v_worldNormal = mat3(Mmatrix) * normal;
+
+            // for bump mapping
+            mat4 viewModelMatrix = Vmatrix * Mmatrix;
+            v_viewModelPosition = vec3(viewModelMatrix * vec4(position, 1));
+            vec3 t = normalize(mat3(TransformNormalMatrix) * a_tangent);
+            vec3 b = normalize(mat3(TransformNormalMatrix) * a_bitangent);
+            vec3 n = normalize(mat3(TransformNormalMatrix) * normal);
+            v_btn = transpose(mat3(t, b, n));
 
             if (shadingOn){
                 vec3 ambientLight = vec3(0.3, 0.3, 0.3);
@@ -49,8 +69,8 @@ class Renderer{
 
         this.fragmentShaderCode = `
         precision mediump float;
-        varying vec3 vColor;
 
+        varying vec3 vColor;
         varying vec3 vLighting;
 
         // for texture mapping
@@ -62,6 +82,11 @@ class Renderer{
         varying vec3 v_worldNormal;
         uniform samplerCube uSamplerCube;
         uniform vec3 uWorldCameraPosition;
+
+        // for bump mapping
+        varying vec3 v_viewModelPosition;
+        uniform sampler2D uSamplerBump; // handle
+        varying mat3 v_btn;
 
         uniform int mappingType;
 
@@ -78,6 +103,12 @@ class Renderer{
 
                 vec4 texelColor = textureCube(uSamplerCube, direction);
                 gl_FragColor = vec4(texelColor.rgb * vLighting, texelColor.a);
+            } else if (mappingType == 3){ // bump mapping
+                vec3 lightDir = normalize(v_btn * normalize(vec3(1, 1, 1)) - v_btn * v_viewModelPosition);
+                vec3 albedo = texture2D(uSamplerBump, vTexCoord).rgb;
+                vec3 ambient = 0.3 * albedo;
+                float diffuse = max(dot(lightDir, normalize(albedo * 2.0 - 1.0)), 0.0);
+                gl_FragColor = vec4(diffuse * albedo + ambient, 1.0);
             }
         }
         `
@@ -132,10 +163,11 @@ class Renderer{
         this._Mmatrix = gl.getUniformLocation(this.program, "Mmatrix");
         this._TransformNormalMatrix = gl.getUniformLocation(this.program, "TransformNormalMatrix");
         this._ShadingOn = gl.getUniformLocation(this.program, "shadingOn");
-        this._Sampler = gl.getUniformLocation(this.program, "uSampler");
         this._Mapping = gl.getUniformLocation(this.program, "mappingType");
-        this._SamplerCube = gl.getUniformLocation(this.program, "uSamplerCube");
         this._WorldCameraPositionLocation = gl.getUniformLocation(this.program, "uWorldCameraPosition");
+        this._Sampler = gl.getUniformLocation(this.program, "uSampler");
+        this._SamplerCube = gl.getUniformLocation(this.program, "uSamplerCube");
+        this._SamplerBump = gl.getUniformLocation(this.program, "uSamplerBump");
     }
 
     draw(gl, model, cumulativeModelMatrix) {
@@ -176,6 +208,22 @@ class Renderer{
         gl.enableVertexAttribArray(textureCoord);
         gl.vertexAttribPointer(textureCoord, 2, gl.FLOAT, false, 0, 0);
 
+        const tangentBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, tangentBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.tangents), gl.STATIC_DRAW);
+
+        const tangentPosition = gl.getAttribLocation(this.program, 'a_tangent');
+        gl.enableVertexAttribArray(tangentPosition);
+        gl.vertexAttribPointer(tangentPosition, 3, gl.FLOAT, false, 0, 0);
+
+        const bitangentBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, bitangentBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.bitangents), gl.STATIC_DRAW);
+
+        const bitangentPosition = gl.getAttribLocation(this.program, 'a_bitangent');
+        gl.enableVertexAttribArray(bitangentPosition);
+        gl.vertexAttribPointer(bitangentPosition, 3, gl.FLOAT, false, 0, 0);
+
         gl.useProgram(this.program)
 
         gl.uniformMatrix4fv(this._Pmatrix, false, this.proj_matrix);
@@ -193,11 +241,16 @@ class Renderer{
         if (this.mappingType == 0 || this.mappingType == 1){
             gl.uniform1i(this._Sampler, 0);
             gl.uniform1i(this._SamplerCube, 1);
+            gl.uniform1i(this._SamplerBump, 2);
         } else if (this.mappingType == 2){
             gl.uniform1i(this._Sampler, 1);
             gl.uniform1i(this._SamplerCube, 0);
+            gl.uniform1i(this._SamplerBump, 2);
+        } else if (this.mappingType == 3){
+            gl.uniform1i(this._Sampler, 1);
+            gl.uniform1i(this._SamplerCube, 2);
+            gl.uniform1i(this._SamplerBump, 0);
         }
-
 
         gl.drawArrays(gl.TRIANGLES, 0, model.expandedVertices.length);
     }
@@ -265,7 +318,6 @@ class Renderer{
         const y = this.camera_properties.distance * Math.sin(this.camera_properties.y_radian) * Math.sin(this.camera_properties.x_radian);
         const z = this.camera_properties.distance * Math.cos(this.camera_properties.y_radian);
         this.cameraPosition = [x, y, z];
-        // console.log(this.cameraPosition);
     }
 
     isPowerOf2(value) {
@@ -340,6 +392,27 @@ class Renderer{
         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
         
+    }
+
+    prepareBump(){
+        const _bump = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, _bump);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255])); // fallback
+        const image = new Image();
+        image.crossOrigin = "";
+        image.src = "https://olegon.github.io/html5-webgl-normalmapping/resources/ntile.png";
+        image.onload = () => {
+            gl.bindTexture(gl.TEXTURE_2D, _bump);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+            if (this.isPowerOf2(image.width) && this.isPowerOf2(image.height)) {
+                gl.generateMipmap(gl.TEXTURE_2D);
+            } else {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            }
+        };
     }
 
     setMappingType(type){
