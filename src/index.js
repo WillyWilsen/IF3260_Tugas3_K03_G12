@@ -7,6 +7,7 @@ const camera_angle_z = document.getElementById('camera_angle_z');
 const tree = document.getElementById('div-tree');
 const add_component_btn = document.getElementById('add-component-btn');
 const selected_component = document.getElementById('selected-component');
+const reset_btn = document.getElementById('reset-btn');
 
 function app() {
     gl.enable(gl.DEPTH_TEST);
@@ -193,4 +194,17 @@ function addComponent(parentIdx){
 }
 add_component_btn.addEventListener("click", function(){
     addComponent(selectedIdx);
+});
+
+function reset() {
+}
+reset_btn.addEventListener("click", function(){
+    cameraZoomHandler(5);
+    cameraRotationHandler(0, "x");
+    cameraRotationHandler(0, "y");
+    cameraRotationHandler(0, "z");
+    document.getElementById("camera_zoom").value = 5;
+    document.getElementById("camera_angle_x").value = 0;
+    document.getElementById("camera_angle_y").value = 0;
+    document.getElementById("camera_angle_z").value = 0;
 });
