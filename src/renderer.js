@@ -103,7 +103,7 @@ class Renderer{
 
         this.init(gl);
 
-        this.prepareEnvironment();
+        this.mappingType = 0;
             
     }
 
@@ -187,13 +187,18 @@ class Renderer{
         gl.uniform3fv(this._WorldCameraPositionLocation, this.cameraPosition);
 
         gl.uniform1i(this._ShadingOn, false); // TODO: toggle for shading
-        gl.uniform1i(this._Mapping, 2); // TODO: change mapping type
+        gl.uniform1i(this._Mapping, this.mappingType); // TODO: change mapping type
 
         gl.activeTexture(gl.TEXTURE0);
-        gl.uniform1i(this._Sampler, 1);
 
-        // gl.activeTexture(gl.TEXTURE1);
-        gl.uniform1i(this._SamplerCube, 0);
+        if (this.mappingType == 0 || this.mappingType == 1){
+            gl.uniform1i(this._Sampler, 0);
+            gl.uniform1i(this._SamplerCube, 1);
+        } else if (this.mappingType == 2){
+            gl.uniform1i(this._Sampler, 1);
+            gl.uniform1i(this._SamplerCube, 0);
+        }
+
 
         gl.drawArrays(gl.TRIANGLES, 0, model.expandedVertices.length);
     }
@@ -328,6 +333,7 @@ class Renderer{
             image.src = url;
             image.onload = () => {
                 gl.bindTexture(gl.TEXTURE_CUBE_MAP, _envTexture);
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
                 gl.texImage2D(target, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
             };
@@ -335,6 +341,10 @@ class Renderer{
         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
         
+    }
+
+    setMappingType(type){
+        this.mappingType = type;
     }
 
 }
