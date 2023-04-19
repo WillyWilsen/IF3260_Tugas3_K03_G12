@@ -7,6 +7,7 @@ class Model {
         this.faces = faces;
         this.level = level;
         this.texCoords = [];
+        this.normals = [];
         this.expandedVertices = [];
         this.expandedColors = [];
 
@@ -85,6 +86,11 @@ class Model {
             this.generateTexCoords();
         }
 
+        // fill Normal
+        if (this.normals.length == 0){
+            this.generateNormal();
+        }
+
         for (let i=0; i<this.children.length; i++){
             this.children[i].draw(renderer, gl);
         }
@@ -95,7 +101,7 @@ class Model {
         this.button = button;
     }
 
-    generateTexCoords(){ // i*6 + j
+    generateTexCoords(){ 
         const texCoordsMatrix = [[0,0], [1,1], [1,0], [0,1]]
         const facesLen = this.faces.length;
         const verticesLen = this.faces.length;
@@ -123,6 +129,59 @@ class Model {
                 this.expandedColors.push(r,g,b);
                 this.texCoords.push(u,v);
             }
+        }
+    }
+
+    generateNormal(){
+
+        let p1, p2, p3;
+        let v21, v31;
+        let n, l;
+
+        for(let i=0; i<this.faces.length; i+=3){
+            
+            p1 = {
+                x: this.vertices[this.faces[i]*3],
+                y: this.vertices[this.faces[i]*3+1],
+                z: this.vertices[this.faces[i]*3+2],
+            }
+            p2 = {
+                x: this.vertices[this.faces[i+1]*3],
+                y: this.vertices[this.faces[i+1]*3+1],
+                z: this.vertices[this.faces[i+1]*3+2],
+            }
+            p3 = {
+                x: this.vertices[this.faces[i+2]*3],
+                y: this.vertices[this.faces[i+2]*3+1],
+                z: this.vertices[this.faces[i+2]*3+2],
+            }
+
+            v21 = {
+                x: p2.x - p1.x,
+                y: p2.y - p1.y,
+                z: p2.z - p1.z,
+            }
+            v31 = {
+                x: p3.x - p1.x,
+                y: p3.y - p1.y,
+                z: p3.z - p1.z,
+            }
+
+            n = {
+                x: ((v21.y*v31.z) - (v21.z*v31.y)),
+                y: ((v21.z*v31.x) - (v21.x*v31.z)),
+                z: ((v21.x*v31.y) - (v21.y*v31.x)),
+            }
+
+            l = Math.sqrt(n.x*n.x + n.y*n.y + n.z*n.z);
+            n.x /= l;
+            n.y /= l;
+            n.z /= l;
+
+            this.normals.push(n.x, n.y, n.z);
+            this.normals.push(n.x, n.y, n.z);
+            this.normals.push(n.x, n.y, n.z);
+
         }
     }
 

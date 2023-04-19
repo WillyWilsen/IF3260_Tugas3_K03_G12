@@ -53,7 +53,8 @@ class Renderer{
             if (mappingType == 0){ // no mapping
                 gl_FragColor = vec4(vColor.rgb * vLighting, 1.0);
             } else if (mappingType == 1){ // texture mapping
-                gl_FragColor = texture2D(uSampler, vTexCoord);
+                vec4 texelColor = texture2D(uSampler, vTexCoord);
+                gl_FragColor = vec4(texelColor.rgb * vLighting, texelColor.a);
             }
         }
         `
@@ -71,6 +72,8 @@ class Renderer{
         ];
         this.view_matrix = undefined;
 
+        this.transform_normal_matrix = undefined;
+
         this.camera_properties = {
             "distance": 5,
             "x_radian": 0,
@@ -80,38 +83,8 @@ class Renderer{
 
         this.init(gl);
 
-        this.texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255])); // fallback
-        this.image = new Image();
-        this.image.crossOrigin = "";
-        this.image.src = "https://images.pexels.com/photos/6976103/pexels-photo-6976103.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
-        this.image.onload = () => {
-            gl.bindTexture(gl.TEXTURE_2D, this.texture);
-            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
-            if (this.isPowerOf2(this.image.width) && this.isPowerOf2(this.image.height)) {
-                gl.generateMipmap(gl.TEXTURE_2D);
-            } else {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            }
-        };
+        this.prepareTexture();
             
-    }
-
-    loadImage(){
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
-        if (this.isPowerOf2(image.width) && this.isPowerOf2(image.height)) {
-            gl.generateMipmap(gl.TEXTURE_2D);
-        } else {
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        }
     }
 
     init(gl) {
@@ -164,13 +137,13 @@ class Renderer{
         gl.enableVertexAttribArray(colorPosition);
         gl.vertexAttribPointer(colorPosition, 3, gl.FLOAT, false, 0, 0);
 
-        // const normal_buffer = gl.createBuffer();
-        // gl.bindBuffer(gl.ARRAY_BUFFER, normal_buffer);
-        // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normal), gl.STATIC_DRAW);
+        const normal_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, normal_buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(model.normals), gl.STATIC_DRAW);
         
-        // const normalLocation = gl.getAttribLocation(this.program, 'normal');
-        // gl.enableVertexAttribArray(normalLocation);
-        // gl.vertexAttribPointer(normalLocation, 3, gl.FLOAT, false, 0, 0);
+        const normalLocation = gl.getAttribLocation(this.program, 'normal');
+        gl.enableVertexAttribArray(normalLocation);
+        gl.vertexAttribPointer(normalLocation, 3, gl.FLOAT, false, 0, 0);
 
         const textureCoordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
@@ -185,10 +158,10 @@ class Renderer{
         gl.uniformMatrix4fv(this._Pmatrix, false, this.proj_matrix);
         gl.uniformMatrix4fv(this._Vmatrix, false, this.view_matrix);
         gl.uniformMatrix4fv(this._Mmatrix, false, this.model_matrix);
-        // gl.uniformMatrix4fv(this._TransformNormalMatrix, false, this.transform_normal_matrix);
+        gl.uniformMatrix4fv(this._TransformNormalMatrix, false, this.transform_normal_matrix);
 
-        // gl.uniform1i(this._ShadingOn, this.shadingOn);
-        gl.uniform1i(this._Mapping, 1); // change mapping type
+        gl.uniform1i(this._ShadingOn, true); // TODO: toggle for shading
+        gl.uniform1i(this._Mapping, 1); // TODO: change mapping type
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         
@@ -248,20 +221,88 @@ class Renderer{
         this.view_matrix = matrixMultiplication(this.view_matrix, rotation_y);
         this.view_matrix = matrixMultiplication(this.view_matrix, rotation_z);
 
+        this.setTransformNormalMatrix();
+
     }
 
-    prepareImage(){
-        const texture = gl.createTexture();
-        
-        this.image.onload = () => {
-            
-        };
-        
-        
+    setTransformNormalMatrix(){
+        const modelViewMatrix = matrixMultiplication(this.model_matrix, this.view_matrix);
+        this.transform_normal_matrix = transposeMatrix(invertMatrix4(modelViewMatrix));
+        console.log(this.transform_normal_matrix);
     }
 
     isPowerOf2(value) {
         return (value & (value - 1)) === 0;
+    }
+
+    prepareTexture(){
+        const _texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, _texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255])); // fallback
+        const image = new Image();
+        image.crossOrigin = "";
+        image.src = "https://images.pexels.com/photos/6976103/pexels-photo-6976103.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
+        image.onload = () => {
+            gl.bindTexture(gl.TEXTURE_2D, _texture);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+            if (this.isPowerOf2(image.width) && this.isPowerOf2(image.height)) {
+                gl.generateMipmap(gl.TEXTURE_2D);
+            } else {
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            }
+        };
+        this.texture = _texture;
+    }
+
+    prepareEnvironment(){
+        const _envTexture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, _texture);
+
+        const faceInfos = [
+            {
+                target: gl.TEXTURE_CUBE_MAP_POSITIVE_X, 
+                url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/pos-x.jpg',
+            },
+            {
+                target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 
+                url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/neg-x.jpg',
+            },
+            {
+                target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 
+                url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/pos-y.jpg',
+            },
+            {
+                target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 
+                url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/neg-y.jpg',
+            },
+            {
+                target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 
+                url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/pos-z.jpg',
+            },
+            {
+                target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 
+                url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/neg-z.jpg',
+            },
+        ];
+        faceInfos.forEach((faceInfo) => {
+            const {target, url} = faceInfo;
+            gl.texImage2D(target, 0, gl.RGBA, 512, 512, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        
+            const image = new Image();
+            image.src = url;
+            image.addEventListener('load', function() {
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+                gl.texImage2D(target, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            });
+        });
+        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+        gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+
+        this.texture = _envTexture;
     }
 
 }
