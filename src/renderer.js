@@ -18,10 +18,19 @@ class Renderer{
 
         varying vec2 vTexCoord;
 
+        varying vec3 v_worldPosition;
+        varying vec3 v_worldNormal;
+
         void main(void) { 
             gl_Position = vec4(position, 1)*Mmatrix*Vmatrix*Pmatrix;
             vColor = color;
+
+            // for texture mapping
             vTexCoord = texCoord;
+
+            // for environment mapping
+            v_worldPosition = (Mmatrix * vec4(position, 1)).xyz;
+            v_worldNormal = mat3(Mmatrix) * normal;
 
             if (shadingOn){
                 vec3 ambientLight = vec3(0.3, 0.3, 0.3);
@@ -44,8 +53,15 @@ class Renderer{
 
         varying vec3 vLighting;
 
+        // for texture mapping
         varying vec2 vTexCoord;
         uniform sampler2D uSampler;
+
+        // for environment mapping
+        varying vec3 v_worldPosition;
+        varying vec3 v_worldNormal;
+        uniform samplerCube uSamplerCube;
+        uniform vec3 uWorldCameraPosition;
 
         uniform int mappingType;
 
@@ -54,6 +70,13 @@ class Renderer{
                 gl_FragColor = vec4(vColor.rgb * vLighting, 1.0);
             } else if (mappingType == 1){ // texture mapping
                 vec4 texelColor = texture2D(uSampler, vTexCoord);
+                gl_FragColor = vec4(texelColor.rgb * vLighting, texelColor.a);
+            } else if (mappingType == 2){ // environment mapping
+                vec3 worldNormal = normalize(v_worldNormal);
+                vec3 eyeToSurfaceDir = normalize(v_worldPosition - uWorldCameraPosition);
+                vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
+
+                vec4 texelColor = textureCube(uSamplerCube, direction);
                 gl_FragColor = vec4(texelColor.rgb * vLighting, texelColor.a);
             }
         }
@@ -81,9 +104,11 @@ class Renderer{
             "z_radian": 0,
         }
 
+        this.cameraPosition = [0,0,0];
+
         this.init(gl);
 
-        this.prepareTexture();
+        this.prepareEnvironment();
             
     }
 
@@ -115,11 +140,15 @@ class Renderer{
         this._ShadingOn = gl.getUniformLocation(this.program, "shadingOn");
         this._Sampler = gl.getUniformLocation(this.program, "uSampler");
         this._Mapping = gl.getUniformLocation(this.program, "mappingType");
+        this._SamplerCube = gl.getUniformLocation(this.program, "uSamplerCube");
+        this._WorldCameraPositionLocation = gl.getUniformLocation(this.program, "uWorldCameraPosition");
     }
 
     draw(gl, model) {
 
         this.setViewMatrix();
+        this.setTransformNormalMatrix();
+        this.setCameraPosition();
 
         const vertexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -160,12 +189,16 @@ class Renderer{
         gl.uniformMatrix4fv(this._Mmatrix, false, this.model_matrix);
         gl.uniformMatrix4fv(this._TransformNormalMatrix, false, this.transform_normal_matrix);
 
-        gl.uniform1i(this._ShadingOn, true); // TODO: toggle for shading
-        gl.uniform1i(this._Mapping, 1); // TODO: change mapping type
+        gl.uniform3fv(this._WorldCameraPositionLocation, this.cameraPosition);
+
+        gl.uniform1i(this._ShadingOn, false); // TODO: toggle for shading
+        gl.uniform1i(this._Mapping, 2); // TODO: change mapping type
+
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.texture);
-        
-        gl.uniform1i(this._Sampler, 0);
+        gl.uniform1i(this._Sampler, 1);
+
+        // gl.activeTexture(gl.TEXTURE1);
+        gl.uniform1i(this._SamplerCube, 0);
 
         gl.drawArrays(gl.TRIANGLES, 0, model.expandedVertices.length);
     }
@@ -221,14 +254,19 @@ class Renderer{
         this.view_matrix = matrixMultiplication(this.view_matrix, rotation_y);
         this.view_matrix = matrixMultiplication(this.view_matrix, rotation_z);
 
-        this.setTransformNormalMatrix();
-
     }
 
     setTransformNormalMatrix(){
         const modelViewMatrix = matrixMultiplication(this.model_matrix, this.view_matrix);
         this.transform_normal_matrix = transposeMatrix(invertMatrix4(modelViewMatrix));
-        console.log(this.transform_normal_matrix);
+    }
+
+    setCameraPosition(){
+        const x = this.camera_properties.distance * Math.sin(this.camera_properties.y_radian) * Math.cos(this.camera_properties.x_radian);
+        const y = this.camera_properties.distance * Math.sin(this.camera_properties.y_radian) * Math.sin(this.camera_properties.x_radian);
+        const z = this.camera_properties.distance * Math.cos(this.camera_properties.y_radian);
+        this.cameraPosition = [x, y, z];
+        // console.log(this.cameraPosition);
     }
 
     isPowerOf2(value) {
@@ -254,12 +292,11 @@ class Renderer{
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             }
         };
-        this.texture = _texture;
     }
 
     prepareEnvironment(){
         const _envTexture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, _texture);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, _envTexture);
 
         const faceInfos = [
             {
@@ -292,17 +329,17 @@ class Renderer{
             gl.texImage2D(target, 0, gl.RGBA, 512, 512, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
         
             const image = new Image();
+            image.crossOrigin = "";
             image.src = url;
-            image.addEventListener('load', function() {
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+            image.onload = () => {
+                gl.bindTexture(gl.TEXTURE_CUBE_MAP, _envTexture);
                 gl.texImage2D(target, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-            });
+            };
         });
         gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-
-        this.texture = _envTexture;
+        
     }
 
 }
