@@ -8,6 +8,7 @@ const tree = document.getElementById('div-tree');
 const add_component_btn = document.getElementById('add-component-btn');
 const selected_component = document.getElementById('selected-component');
 const reset_btn = document.getElementById('reset-btn');
+const mapping_dropdown = document.getElementById('dropdown-mapping');
 
 function app() {
     gl.enable(gl.DEPTH_TEST);
@@ -207,4 +208,18 @@ reset_btn.addEventListener("click", function(){
     document.getElementById("camera_angle_x").value = 0;
     document.getElementById("camera_angle_y").value = 0;
     document.getElementById("camera_angle_z").value = 0;
+});
+
+mapping_dropdown.addEventListener('change', (e) => {
+    if (e.target.value == "none"){
+        renderer.setMappingType(0);
+    } else if (e.target.value == "texture"){
+        renderer.prepareTexture();
+        renderer.setMappingType(1);
+    } else if (e.target.value == "environment"){
+        renderer.prepareEnvironment();
+        renderer.setMappingType(2);
+    } else if (e.target.value == "bump"){
+        renderer.setMappingType(3);
+    }
 });
