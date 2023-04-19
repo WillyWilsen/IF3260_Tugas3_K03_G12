@@ -1,5 +1,6 @@
 const save_btn = document.getElementById('save-btn');
 const load_btn = document.getElementById('load-btn');
+const play_animation = document.getElementById('play-animation');
 
 const dropdown_projection = document.getElementById('dropdown_projection');
 const camera_zoom = document.getElementById('camera_zoom');
@@ -307,3 +308,52 @@ mapping_dropdown.addEventListener('change', (e) => {
         renderer.setMappingType(3);
     }
 });
+
+// Animation
+play_animation.addEventListener('click', (e) => {
+    time_per_frame = 1000 / 10;
+    current_frame = 0;
+    total_frame = models[0].total_frame;
+    animate()
+});
+
+const animate = () => {
+    if (current_frame === 0) {
+        time = Date.now();
+        animationModel(models[0], current_frame);
+        current_frame++;
+    }
+
+    if (current_frame < total_frame) {
+        if (Date.now() - time >= time_per_frame) {
+            time = Date.now();
+            animationModel(models[0], current_frame);
+            current_frame++;
+        }
+        requestAnimationFrame(animate);
+    } else {
+        if (Date.now() - time >= time_per_frame) {
+            resetAnimationModel(models[0]);
+        } else {
+            requestAnimationFrame(animate);
+        }
+    }
+};
+
+const animationModel = (model, frameIdx) => {
+    model.setTranslation(model.animation.translation[frameIdx].x, model.animation.translation[frameIdx].y, model.animation.translation[frameIdx].z);
+    model.setRotation(model.animation.rotation[frameIdx].x, model.animation.rotation[frameIdx].y, model.animation.rotation[frameIdx].z);
+    model.setScale(model.animation.scale[frameIdx].x, model.animation.scale[frameIdx].y, model.animation.scale[frameIdx].z);
+    for(let i=0; i<model.children.length; i++){
+        animationModel(model.children[i], frameIdx);
+    }
+}
+
+const resetAnimationModel = (model) => {
+    model.setTranslation(0, 0, 0);
+    model.setRotation(0, 0, 0);
+    model.setScale(1, 1, 1);
+    for(let i=0; i<model.children.length; i++){
+        resetAnimationModel(model.children[i]);
+    }
+}
