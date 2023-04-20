@@ -140,6 +140,7 @@ function loadModel(rawObject, level, createNewModel, parentIdx=undefined){
     delete rawObject.children;
 
     Object.assign(newModel, rawObject);
+    newModel.model_matrix = identityMatrix();
 
     models.push(newModel);
     if (!createNewModel) {
