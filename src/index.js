@@ -39,9 +39,9 @@ function app() {
     if (models.length){
         models[0].draw(renderer, gl, identityMatrix());
     }
-    setTimeout(app, 16);
+    setTimeout(app, 32);
 }
-setTimeout(app, 16);
+setTimeout(app, 32);
 
 function getSelectedChildIdx(model, child = []) {
     let findIdx = false;
@@ -297,7 +297,7 @@ model_scale_y.addEventListener("input", (e) => {
 });
 model_scale_z.addEventListener("input", (e) => {
     const model = state.selectedModel;
-    model.setScale(model.scale.y, model.scale.y, parseFloat(e.target.value));
+    model.setScale(model.scale.x, model.scale.y, parseFloat(e.target.value));
 });
 
 

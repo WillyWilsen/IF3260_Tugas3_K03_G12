@@ -424,13 +424,10 @@ class Renderer{
     setProjection(type) {
         if (type == 'orthographic') {
             this.proj_matrix = getOrthogonalProjection(-4, 4, -4, 4, 0.1, 15);
-            console.log('Orthographic!');
         } else if (type == 'oblique') {
             this.proj_matrix = getObliqueProjection(45, 45, -6, 2, -6, 2, -2, 10);
-            console.log('Oblique!');
         } else {
             this.proj_matrix = getPerspectiveProjection(45, canvas.width/canvas.height, 0.1, 15);
-            console.log('Perspective!');
         }
     }
 
