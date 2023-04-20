@@ -18,7 +18,7 @@
         <div id="div-canvas">
             <canvas id="canvas" width="450" height="450"></canvas>
         </div>
-        <div id="div-tools">
+        <div id="div-tools-1" class="div-tools">
             <div id="div-tree">
             </div>
             <div id="div-selected-component" class="vertical">
@@ -93,7 +93,8 @@
                 </div>
                 <h3></h3>
             </div>
-
+        </div>   
+        <div id="div-tools-2" class="div-tools">
             <div id="div-object-translation" class="vertical">
                 <h3>Translation Tool</h3>
                 <div class="horizontal">
@@ -143,6 +144,7 @@
             </div>
 
             <div id="div-select-mapping">
+                <h3>Mapping</h3>
                 <label for="dropdown-mapping">Choose a mapping type:</label>
                 <select id="dropdown-mapping">
                     <option value="none">None</option>
@@ -151,17 +153,26 @@
                     <option value="bump">Bump</option>
                 </select>
             </div>
+            <div id="div-shading" class="vertical">
+                <h3>Turn Shading On/Off</h3>   
+                <div class="horizontal">
+                    <input type="checkbox" name="shadingCheckbox" id="shadingCheckbox" value="isChecked">
+                    <label for="shadingCheckbox">Shading</label>
+                </div>
+            </div>
             <div id="div-add-component">
+                <h3>Add Component</h3>
                 <button id="add-component-btn">
-                    Add component
+                    Add
                 </button>
             </div>
             <div id="reset">
+                <h3>Reset Component</h3>
                 <button id="reset-btn">
-                    Reset component
+                    Reset
                 </button>
             </div>
-        </div>   
+        </div>
     </div>
 </body>
 </html>
