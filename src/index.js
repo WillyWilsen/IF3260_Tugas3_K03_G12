@@ -138,9 +138,19 @@ function loadModel(rawObject, level, createNewModel, parentIdx=undefined){
 
     const children = rawObject.children;
     delete rawObject.children;
+    delete rawObject.texCoords;
+    delete rawObject.normals;
+    delete rawObject.expandedVertices;
+    delete rawObject.expandedColors;
+    delete rawObject.tangents;
+    delete rawObject.bitangents;
+    delete rawObject.translation;
+    delete rawObject.rotation;
+    delete rawObject.scale;
+    delete rawObject.model_matrix;
 
     Object.assign(newModel, rawObject);
-    newModel.model_matrix = identityMatrix();
+
 
     models.push(newModel);
     if (!createNewModel) {
