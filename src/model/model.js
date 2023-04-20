@@ -1,5 +1,5 @@
 class Model {
-    constructor(id, name, vertices, colors, faces, level) {
+    constructor(id, name, vertices, colors, faces, level, animation=undefined) {
         this.id = id;
         this.name = name;
         this.vertices = vertices;
@@ -12,6 +12,10 @@ class Model {
         this.expandedColors = [];
         this.tangents = [];
         this.bitangents = [];
+        
+        if (!animation){
+            this.setDefaultAnimation();
+        }
 
         this.translation = { x: 0, y: 0, z: 0 }
         this.rotation = { x: 0, y: 0, z: 0 }
@@ -253,6 +257,53 @@ class Model {
                 this.tangents.push(tangent[0], tangent[1], tangent[2]);
                 this.bitangents.push(bitangent[0], bitangent[1], bitangent[2]);
             }
+        }
+    }
+
+    setDefaultAnimation(){
+        this.animation = {
+            "translation": [
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0}
+            ],
+            "rotation": [
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0},
+                {"x": 0, "y": 0, "z": 0}
+            ],
+            "scale": [
+                {"x": 1, "y": 1, "z": 1},
+                {"x": 1, "y": 1, "z": 1},
+                {"x": 1, "y": 1, "z": 1},
+                {"x": 1, "y": 1, "z": 1},
+                {"x": 1, "y": 1, "z": 1},
+                {"x": 1, "y": 1, "z": 1},
+                {"x": 1, "y": 1, "z": 1},
+                {"x": 1, "y": 1, "z": 1},
+                {"x": 1, "y": 1, "z": 1},
+                {"x": 1, "y": 1, "z": 1},
+                {"x": 1, "y": 1, "z": 1},
+                {"x": 1, "y": 1, "z": 1}
+            ]
         }
     }
 
