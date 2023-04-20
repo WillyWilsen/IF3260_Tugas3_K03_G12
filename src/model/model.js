@@ -307,7 +307,7 @@ class Model {
         }
     }
 
-    getTransformedVertices() {
+    getTransformedVertices(cumulativeModelMatrix) {
         const finalVertices = [];
         for (let i = 0; i < this.vertices.length; i += 3) {
             let quad = [this.vertices[i], this.vertices[i+1], this.vertices[i+2], 1];
@@ -315,7 +315,7 @@ class Model {
 
             for (let j = 0; j < 4; j++) {
                 for (let k = 0; k < 4; k++) {
-                    result[j] += this.model_matrix[4 * j + k] * quad[k];
+                    result[j] += cumulativeModelMatrix[4 * j + k] * quad[k];
                 }
             }
 
@@ -331,10 +331,11 @@ class Model {
         return finalVertices;
     }
 
-    transformVertices() {
-        this.vertices = this.getTransformedVertices();
+    transformVertices(cumulativeModelMatrix) {
+        cumulativeModelMatrix = matrixMultiplication(cumulativeModelMatrix, this.model_matrix)
+        this.vertices = this.getTransformedVertices(cumulativeModelMatrix);
         for (let i=0; i<this.children.length; i++){
-            this.children[i].transformVertices();
+            this.children[i].transformVertices(cumulativeModelMatrix);
         }
     }
 }

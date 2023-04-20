@@ -69,7 +69,7 @@ function getSelectedChildIdx(model, child = []) {
 }
 
 save_btn.addEventListener("click", e => {
-    modelsToSave = models[selectedIdx].transformVertices();
+    modelsToSave = models[selectedIdx].transformVertices(identityMatrix());
     
     const objectsToSave = models[selectedIdx];
   
