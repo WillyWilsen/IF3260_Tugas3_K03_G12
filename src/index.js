@@ -31,6 +31,7 @@ const add_component_btn = document.getElementById('add-component-btn');
 const selected_component = document.getElementById('selected-component');
 const reset_btn = document.getElementById('reset-btn');
 const mapping_dropdown = document.getElementById('dropdown-mapping');
+const shadingCheckbox = document.getElementById('shadingCheckbox');
 
 function app() {
     gl.enable(gl.DEPTH_TEST);
@@ -472,3 +473,11 @@ const resetAnimationModel = (model) => {
         resetAnimationModel(model.children[i]);
     }
 }
+
+shadingCheckbox.addEventListener('change', function() {
+    if(this.checked) {
+        renderer.setShading(true);
+    } else {
+        renderer.setShading(false);
+    }
+});

@@ -128,13 +128,15 @@ class Renderer{
             "x_radian": 0,
             "y_radian": 0,
             "z_radian": 0,
-        }
+        };
 
-        this.cameraPosition = [0,0,0]
+        this.cameraPosition = [0,0,0];
 
-        this.init(gl)
+        this.init(gl);
 
-        this.mappingType = 0
+        this.mappingType = 0;
+
+        this.shading = false;
     }
 
     init(gl) {
@@ -233,8 +235,8 @@ class Renderer{
 
         gl.uniform3fv(this._WorldCameraPositionLocation, this.cameraPosition);
 
-        gl.uniform1i(this._ShadingOn, false); // TODO: toggle for shading
-        gl.uniform1i(this._Mapping, this.mappingType); // TODO: change mapping type
+        gl.uniform1i(this._ShadingOn, this.shading); 
+        gl.uniform1i(this._Mapping, this.mappingType); 
 
         gl.activeTexture(gl.TEXTURE0);
 
@@ -430,5 +432,9 @@ class Renderer{
             this.proj_matrix = getPerspectiveProjection(45, canvas.width/canvas.height, 0.1, 15);
             console.log('Perspective!');
         }
+    }
+
+    setShading(on){
+        this.shading = on;
     }
 }
