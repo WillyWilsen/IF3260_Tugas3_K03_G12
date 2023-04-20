@@ -274,9 +274,9 @@ model_scale_z.addEventListener("input", (e) => {
 
 function addComponent(parentIdx){
     const name = "Cube " + models.length.toString();
-    const vertices = [-1.2,-1.2, 1.2, 1.2,-1.2, 1.2, 1.2, 1.2, 1.2, -1.2, 1.2, 1.2, -1.2,-1.2,-1.2, 1.2,-1.2,-1.2, 1.2, 1.2,-1.2, -1.2, 1.2,-1.2];
+    const vertices = [-1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, -1, 1, 1, -1, -1, -1, -1, -1];
     const colors = [1,1,1, 1,1,1, 1,1,1, 1,1,1, 1,1,1, 1,1,1, 1,1,1, 1,1,1];
-    const faces = [0,1,2, 0,2,3, 4,5,6, 4,6,7, 0,3,4, 3,4,7, 1,2,5, 2,5,6, 0,1,4, 1,4,5, 2,3,6, 3,6,7];
+    const faces = [1,3,0, 1,2,3, 5,7,4, 5,6,7, 4,3,7, 4,0,3, 6,1,5, 6,2,1, 5,0,4, 5,1,0, 7,2,6, 7,3,2];
     const level = models[parentIdx].level + 1;
     const newModel = new Model(models.length + 1, name, vertices, colors, faces, level);
     models[parentIdx].addChild(newModel);
