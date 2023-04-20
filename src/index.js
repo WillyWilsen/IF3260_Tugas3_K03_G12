@@ -3,7 +3,7 @@ const load_btn = document.getElementById('load-btn');
 const play_animation = document.getElementById('play-animation');
 const pause_animation = document.getElementById('pause-animation');
 const reverse_animation = document.getElementById('reverse-animation');
-const reply_animation = document.getElementById('reply-animation');
+const replay_animation = document.getElementById('replay-animation');
 const loopable_animation = document.getElementById('loopable-animation');
 
 const fps = document.getElementById('fps');
@@ -411,7 +411,7 @@ reverse_animation.addEventListener('change', (e) => {
     }
 });
 
-reply_animation.addEventListener('click', async (e) => {
+replay_animation.addEventListener('click', async (e) => {
     time_per_frame = 1000 / fps.value;
     total_frame = models[0].total_frame;
     if (!isAnimationReversed) {
