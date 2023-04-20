@@ -185,10 +185,10 @@ function changeSelected(idx){
     selectedIdx = idx;
     
     selected_component.innerHTML = state.selectedModel.name;
-    syncSliderValues();
+    syncTransformationSliderValues();
 }
 
-function syncSliderValues() {
+function syncTransformationSliderValues() {
     const model = state.selectedModel;
 
     model_translation_x.value = model.translation.x;
@@ -366,7 +366,8 @@ play_animation.addEventListener('click', (e) => {
         current_frame = total_frame - 1;
     }
     isAnimationPaused = false;
-    animate()
+    animate();
+    syncTransformationSliderValues();
 });
 
 pause_animation.addEventListener('click', (e) => {
