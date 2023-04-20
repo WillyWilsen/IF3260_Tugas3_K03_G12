@@ -309,6 +309,7 @@ reset_btn.addEventListener("click", function(){
         changeSelected(i);
         resetEverything();
     }
+    changeSelected(0);
 });
 
 function resetEverything(){
