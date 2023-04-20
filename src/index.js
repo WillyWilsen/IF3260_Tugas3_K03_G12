@@ -148,6 +148,8 @@ function loadModel(rawObject, level, createNewModel, parentIdx=undefined){
     delete rawObject.rotation;
     delete rawObject.scale;
     delete rawObject.model_matrix;
+    delete rawObject.level;
+    delete rawObject.id;
 
     Object.assign(newModel, rawObject);
 
