@@ -315,6 +315,7 @@ reset_btn.addEventListener("click", function(){
     modelScalenHandler(1, 1, 1);
     renderer.setMappingType(0);
     getfps(30);
+    renderer.setShading(false);
     document.getElementById("dropdown_projection").value = "perspective";
     document.getElementById("camera_zoom").value = 5;
     document.getElementById("camera_angle_x").value = 0;
@@ -331,6 +332,7 @@ reset_btn.addEventListener("click", function(){
     document.getElementById("model_scale_z").value = 1;
     document.getElementById("dropdown-mapping").value = "none";
     document.getElementById("fps").value = 30;
+    shadingCheckbox.checked = false;
 });
 
 mapping_dropdown.addEventListener('change', (e) => {
