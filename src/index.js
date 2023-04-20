@@ -204,6 +204,9 @@ function syncSliderValues() {
 }
 
 // Camera viewing control
+function projectionHandler(projection){
+    renderer.setProjection(projection);
+}
 dropdown_projection.addEventListener("change", (e) => {
     renderer.setProjection(e.target.value);
 });
@@ -230,6 +233,10 @@ camera_angle_z.addEventListener("input", (e) => {
 
 // Model Transformations
 /// Translation
+function modelTranslationHandler(x, y, z){
+    const model = state.selectedModel;
+    model.setTranslation(x, y, z);
+}
 model_translation_x.addEventListener("input", (e) => {
     const model = state.selectedModel;
     model.setTranslation(parseFloat(e.target.value), model.translation.y, model.translation.z);
@@ -244,6 +251,10 @@ model_translation_z.addEventListener("input", (e) => {
 });
 
 /// Rotation
+function modelRotationHandler(degreeX, degreeY, degreeZ){
+    const model = state.selectedModel;
+    model.setRotation(degreeX, degreeY, degreeZ);
+}
 model_angle_x.addEventListener("input", (e) => {
     const model = state.selectedModel;
     model.setRotation(parseFloat(e.target.value), model.rotation.y, model.rotation.z);
@@ -258,6 +269,10 @@ model_angle_z.addEventListener("input", (e) => {
 });
 
 /// Scale
+function modelScalenHandler(x, y, z){
+    const model = state.selectedModel;
+    model.setScale(x, y, z);
+}
 model_scale_x.addEventListener("input", (e) => {
     const model = state.selectedModel;
     model.setScale(parseFloat(e.target.value), model.scale.y, model.scale.z);
@@ -288,17 +303,33 @@ add_component_btn.addEventListener("click", function(){
     addComponent(selectedIdx);
 });
 
-function reset() {
-}
 reset_btn.addEventListener("click", function(){
+    projectionHandler("perspective");
     cameraZoomHandler(5);
     cameraRotationHandler(0, "x");
     cameraRotationHandler(0, "y");
     cameraRotationHandler(0, "z");
+    modelTranslationHandler(0, 0, 0);
+    modelRotationHandler(0, 0, 0);
+    modelScalenHandler(1, 1, 1);
+    renderer.setMappingType(0);
+    getfps(30);
+    document.getElementById("dropdown_projection").value = "perspective";
     document.getElementById("camera_zoom").value = 5;
     document.getElementById("camera_angle_x").value = 0;
     document.getElementById("camera_angle_y").value = 0;
     document.getElementById("camera_angle_z").value = 0;
+    document.getElementById("model_translation_x").value = 0;
+    document.getElementById("model_translation_y").value = 0;
+    document.getElementById("model_translation_z").value = 0;
+    document.getElementById("model_angle_x").value = 0;
+    document.getElementById("model_angle_y").value = 0;
+    document.getElementById("model_angle_z").value = 0;
+    document.getElementById("model_scale_x").value = 1;
+    document.getElementById("model_scale_y").value = 1;
+    document.getElementById("model_scale_z").value = 1;
+    document.getElementById("dropdown-mapping").value = "none";
+    document.getElementById("fps").value = 30;
 });
 
 mapping_dropdown.addEventListener('change', (e) => {
@@ -317,8 +348,13 @@ mapping_dropdown.addEventListener('change', (e) => {
 });
 
 // Animation
-play_animation.addEventListener('click', async (e) => {
-    time_per_frame = 1000 / fps.value;
+function getfps(frame){
+    return frame;
+ }
+
+play_animation.addEventListener('click', (e) => {
+    frame = getfps(fps.value);
+    time_per_frame = 1000 / frame;
     total_frame = models[0].total_frame;
     if (current_frame >= total_frame && !isAnimationReversed) {
         current_frame = 0;
