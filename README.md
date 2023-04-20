@@ -34,18 +34,9 @@
 
 ## 3D WebGL Articulated Model
 
-### Table of contents
-* [Overview](#overview)
-* [How to Run](#how-to-run)
-* [Models Sample](#models-sample)
-* [Checklist dan Pembagian Tugas](#checklist-dan-pembagian-tugas)
-
 ### Overview
+<img src="https://github.com/fernaldy112/IF3260_Tugas3_K03_G12/blob/main/image/overview.png">
 
 ### How to Run
 1. Buka folder src
 2. Jalankan `index.html`
-
-### Models Sample
-
-### Checklist dan Pembagian Tugas
