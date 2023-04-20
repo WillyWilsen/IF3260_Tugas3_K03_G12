@@ -317,7 +317,7 @@ mapping_dropdown.addEventListener('change', (e) => {
 });
 
 // Animation
-play_animation.addEventListener('click', (e) => {
+play_animation.addEventListener('click', async (e) => {
     time_per_frame = 1000 / fps.value;
     total_frame = models[0].total_frame;
     if (current_frame >= total_frame && !isAnimationReversed) {
@@ -328,18 +328,6 @@ play_animation.addEventListener('click', (e) => {
     }
     isAnimationPaused = false;
     animate()
-    // while (isAnimationLoopable) {
-    //     time_per_frame = 1000 / fps.value;
-    //     total_frame = models[0].total_frame;
-    //     if (current_frame >= total_frame && !isAnimationReversed) {
-    //         current_frame = 0;
-    //     }
-    //     if (current_frame < 0 && isAnimationReversed) {
-    //         current_frame = total_frame - 1;
-    //     }
-    //     isAnimationPaused = false;
-    //     animate()
-    // }
 });
 
 pause_animation.addEventListener('click', (e) => {
@@ -362,7 +350,7 @@ reverse_animation.addEventListener('change', (e) => {
     }
 });
 
-reply_animation.addEventListener('click', (e) => {
+reply_animation.addEventListener('click', async (e) => {
     time_per_frame = 1000 / fps.value;
     total_frame = models[0].total_frame;
     if (!isAnimationReversed) {
@@ -372,17 +360,6 @@ reply_animation.addEventListener('click', (e) => {
     }
     isAnimationPaused = false;
     animate()
-    // while (isAnimationLoopable) {
-    //     time_per_frame = 1000 / fps.value;
-    //     total_frame = models[0].total_frame;
-    //     if (!isAnimationReversed) {
-    //         current_frame = 0;
-    //     } else {
-    //         current_frame = total_frame - 1;
-    //     }
-    //     isAnimationPaused = false;
-    //     animate()
-    // }
 });
 
 loopable_animation.addEventListener('change', (e) => {
@@ -426,6 +403,16 @@ const animate = () => {
     } else {
         if (Date.now() - time >= time_per_frame) {
             resetAnimationModel(models[0]);
+            if (isAnimationLoopable) {
+                time_per_frame = 1000 / fps.value;
+                total_frame = models[0].total_frame;
+                if (!isAnimationReversed) {
+                    current_frame = 0;
+                } else {
+                    current_frame = total_frame - 1;
+                }
+                requestAnimationFrame(animate);
+            }
         } else {
             requestAnimationFrame(animate);
         }
