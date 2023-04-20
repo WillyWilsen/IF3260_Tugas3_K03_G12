@@ -305,6 +305,13 @@ add_component_btn.addEventListener("click", function(){
 });
 
 reset_btn.addEventListener("click", function(){
+    for (let i=0; i<models.length; i++){
+        changeSelected(i);
+        resetEverything();
+    }
+});
+
+function resetEverything(){
     projectionHandler("perspective");
     cameraZoomHandler(5);
     cameraRotationHandler(0, "x");
@@ -333,7 +340,7 @@ reset_btn.addEventListener("click", function(){
     document.getElementById("dropdown-mapping").value = "none";
     document.getElementById("fps").value = 30;
     shadingCheckbox.checked = false;
-});
+}
 
 mapping_dropdown.addEventListener('change', (e) => {
     if (e.target.value == "none"){
