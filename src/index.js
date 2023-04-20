@@ -69,6 +69,8 @@ function getSelectedChildIdx(model, child = []) {
 }
 
 save_btn.addEventListener("click", e => {
+    modelsToSave = models[selectedIdx].transformVertices();
+    
     const objectsToSave = models[selectedIdx];
   
      const objectsStr = JSON.stringify(objectsToSave);

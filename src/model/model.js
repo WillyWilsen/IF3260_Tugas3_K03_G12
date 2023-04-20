@@ -307,5 +307,38 @@ class Model {
         }
     }
 
-    
+    getTransformedVertices() {
+        const finalVertices = [];
+        for (let i = 0; i < this.vertices.length; i += 3) {
+            let quad = [this.vertices[i], this.vertices[i+1], this.vertices[i+2], 1];
+            let result = [0, 0, 0, 0];
+
+            for (let j = 0; j < 4; j++) {
+                for (let k = 0; k < 4; k++) {
+                    result[j] += this.model_matrix[4 * j + k] * quad[k];
+                }
+            }
+
+            if (result[3] != 0) {
+                for (let j = 0; j < 4; j++) {
+                    result[j] /= result[3];
+                }
+            }
+            result.pop();
+            finalVertices.push(...result);
+        }
+
+        this.translation = { x: 0, y: 0, z: 0 }
+        this.rotation = { x: 0, y: 0, z: 0 }
+        this.scale = { x: 1, y: 1, z: 1 }
+
+        return finalVertices;
+    }
+
+    transformVertices() {
+        this.vertices = this.getTransformedVertices();
+        for (let i=0; i<this.children.length; i++){
+            this.children[i].transformVertices();
+        }
+    }
 }
